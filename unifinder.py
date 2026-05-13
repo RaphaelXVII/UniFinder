@@ -57,6 +57,18 @@ with st.form("Student Information Input"):
     with st.container(horizontal_alignment="center"):
         sumbit = st.form_submit_button("Submit")
 
+ # submit & st.write submit the values and returns what the user enntered
+if sumbit:
+    st.write("GPA", gpa)
+    if score_type=="SAT":
+        st.write("SAT Score: ", sat_score)
+    elif score_type=="ACT":
+        st.write("ACT Score: ", act_score)
+    st.write("Location: ", location)
+
+
+
+
 
 
 
