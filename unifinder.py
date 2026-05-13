@@ -1,8 +1,15 @@
 import streamlit as st
+import requests
 
 st.header("UniFinder", text_alignment="center")
 
-#
+#Name Input
+name = st.text_input(
+    "Enter your Name",
+    value="",
+    placeholder="e.g. John Doe",
+
+)
 # GPA Input
 gpa = st.number_input(
     "High school GPA",
@@ -57,8 +64,11 @@ with st.form("Student Information Input"):
     with st.container(horizontal_alignment="center"):
         sumbit = st.form_submit_button("Submit")
 
+#If Inputs are not filled in, Submit button won't work
+
  # submit & st.write submit the values and returns what the user enntered
 if sumbit:
+    st.write("Name: ", name)
     st.write("GPA", gpa)
     if score_type=="SAT":
         st.write("SAT Score: ", sat_score)
