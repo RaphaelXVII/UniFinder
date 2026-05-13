@@ -15,7 +15,7 @@ gpa = st.number_input(
 
 # This lets the user pick between an SAT or ACT Score to input /
 # the reason why its outside of st.form is because st.form function saves  multiple inputs before submitting it to the backend
-# and we want the score input box to pop up after they make a choice so that user can input score
+# and we want the score input box to pop up after they make a choice so that user can input score.
 score_type = st.radio(
     "Select the Test score type",
     ["SAT", "ACT"],
