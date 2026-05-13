@@ -3,6 +3,20 @@ import requests
 
 st.header("UniFinder", text_alignment="center")
 
+def search_location(query):
+    url = "https://nominatim.openstreetmap.org/search"
+
+    params = {
+        "q": query,
+        "format": "json",
+        "country": "United States",
+        "limit": 5,
+    }
+
+    response = requests.get(url, params=params)
+
+    return response.json()
+
 #Name Input
 name = st.text_input(
     "Enter your Name",
@@ -29,13 +43,18 @@ score_type = st.radio(
     index=None
 )
 
-#st.form is used to create a form of inputs and holds onto all the values so that
-# individual inputs are not be re-ran over and over again and instead holds all values.
-with st.form("Student Information Input"):
 
+
+location = st.text_input(
+    "Enter your Location",
+    placeholder="e.g. Miami"
+)
+
+sat_score = None
+act_score = None
 
 #If else statements based on Score types
-    if score_type == "SAT":
+if score_type == "SAT":
         sat_score = st.number_input(
             "SAT score",
             min_value=400,
@@ -44,7 +63,7 @@ with st.form("Student Information Input"):
             step=100,
             placeholder="Enter SAT score (400 to 1600)"
         )
-    if score_type == "ACT":
+elif score_type == "ACT":
         act_score =st.number_input(
             "ACT score",
             min_value=1,
@@ -54,19 +73,29 @@ with st.form("Student Information Input"):
             placeholder="Enter ACT score (1 to 36)"
         )
 
-    #Location Input
-    location = st.text_input(
-        "Enter Location",
-        "",
-        placeholder="e.g. Miami"
-    )
-#st.container is used to move/ center anything that you need
+#st.form is used to create a form of inputs and holds onto all the values so that
+# individual inputs are not be re-ran over and over again and instead holds all values.
+with st.form("Student Information Input"):
+
+
+
+
+
+
+
+
+#SUBMIT BUTTON IS HERE / st.container is used to move/ center anything that you need
+
+    score_filled = (score_type == "ACT" and act_score is not None) or (score_type == "SAT" and sat_score is not None)
+    filled = gpa is not None and score_type is not None
+
     with st.container(horizontal_alignment="center"):
-        sumbit = st.form_submit_button("Submit")
+        sumbit = st.form_submit_button("Submit", disabled= not filled)
 
-#If Inputs are not filled in, Submit button won't work
+#If Inputs are not filled in, Submit button will not work
 
- # submit & st.write submit the values and returns what the user enntered
+
+ # submit & st.write submit the values and returns what the user entered
 if sumbit:
     st.write("Name: ", name)
     st.write("GPA", gpa)
