@@ -53,7 +53,7 @@ with st.form("Student Information Input"):
         "",
         placeholder="e.g. Miami"
     )
-
+#st.container is used to move/ center anything that you need
     with st.container(horizontal_alignment="center"):
         sumbit = st.form_submit_button("Submit")
 
