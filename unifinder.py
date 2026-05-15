@@ -106,8 +106,8 @@ if location and len(location) >=2:
 
 
 #This is slider for Tuition
-st.slider(
-    "Tuition you are willing to pay",
+sliding = st.slider(
+    "Tuition you are willing to pay (Per Year)",
     min_value = 0,
     max_value = 300000,
     value=None,
@@ -118,8 +118,9 @@ st.slider(
 
 
 #If all Inputs are not filled in, the submit button will not work line 110 and 123 are conneceted
+sliding_filled = sliding > 1000
 score_filled = (score_type == "ACT" and act_score is not None) or (score_type == "SAT" and sat_score is not None)
-filled = (gpa is not None) and (score_type is not None) and (selected_location is not None) and score_filled
+filled = (gpa is not None) and (score_type is not None) and (selected_location is not None) and score_filled and sliding_filled
 
 
 #st.form is used to create a form of inputs and holds onto all the values so that
