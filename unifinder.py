@@ -104,6 +104,16 @@ if location and len(location) >=2:
     else:
             st.error("Not a valid U.S location")
 
+st.slider(
+    "Tuition you are willing to pay",
+    min_value = 0,
+    max_value = 300000,
+    value=None,
+    step=1000,
+    format = "dollar",
+    key=None,
+)
+
 
 #If all Inputs are not filled in, the submit button will not work line 110 and 123 are conneceted
 score_filled = (score_type == "ACT" and act_score is not None) or (score_type == "SAT" and sat_score is not None)
