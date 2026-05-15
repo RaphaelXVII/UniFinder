@@ -104,6 +104,8 @@ if location and len(location) >=2:
     else:
             st.error("Not a valid U.S location")
 
+
+#This is slider for Tuition
 st.slider(
     "Tuition you are willing to pay",
     min_value = 0,
