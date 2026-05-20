@@ -77,7 +77,7 @@ elif score_type == "ACT":
             placeholder="Enter ACT score (1 to 36)"
         )
 
-#Location Dictinaory
+#Location Dictinaory used to abbreviate States so that college_api can use as input
 STATE_ABBREVIATIONS = {
     "Alabama": "AL",
     "Alaska": "AK",
@@ -159,29 +159,26 @@ if location and len(location) >=2:
         if selected_location:
             st.success(f"Selected: {selected_location}")
 
-# Parsing the Location / CONTINUE WORKING ON THIS ASAP
-# parts splits nominatim text into smaller pieces
-# city strips the spaces so that any extra spaces in front or at the end of a string is not captured.
-# State is set to none so that once location is selected
+# Parsing the Nominatim Location results  into smaller strings
+# parts variable  splits nominatim text into smaller pieces
+# city variable strips the spaces so that any extra spaces in front or at the end of a string is not captured.
+# State variable is set to none so that once location is selected it's no longer None
             parts = selected_location.split(",")
             city = parts[0].strip()
             state = None
 
+#Using a for loop to look through each specific piece of string that matches a state and assigns an abbreviation for college_api to read
             for part in parts:
                 specific_location = part.strip()
 
                 if specific_location in STATE_ABBREVIATIONS:
                     state = STATE_ABBREVIATIONS.get(specific_location)
-
-
-
-
     else:
             st.error("Not a valid U.S location")
 
 
 
-#This is slider for Tuition
+#This is slider for Tuition / going to be used to determine how model ranks universities based on user
 sliding = st.slider(
     "Tuition you are willing to pay (Per Year)",
     min_value = 0,
@@ -228,7 +225,8 @@ if sumbit:
     st.write("Tuition willing to pay: ", sliding)
     st.write(state)
     st.subheader("Universities in your Area 🏢")
-#if state is used to fetch the state of the location that the user selected
+
+#"if state" is used to fetch all Universites based on that State that the user selected
     if state:
         colleges = get_colleges(state)
         for college in colleges:
