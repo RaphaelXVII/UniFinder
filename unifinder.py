@@ -158,12 +158,22 @@ if location and len(location) >=2:
         )
         if selected_location:
             st.success(f"Selected: {selected_location}")
-            # Parsing the Location / CONTINUE WORKING ON THIS ASAP
-            parts = selected_location.split(",")
-            city = parts[0].strip()
-            state = parts[1].strip()
 
-            state = STATE_ABBREVIATIONS.get(state)
+            # Parsing the Location / CONTINUE WORKING ON THIS ASAP
+            # parts splits nominatim text into smaller pieces
+            parts = selected_location.split(",")
+            # city strips the spaces so that any extra spaces in front or at the end of a string is not captured.
+            city = parts[0].strip()
+            #State is set to none so that once location is selected
+            state = None
+
+            for part in parts:
+                specific_location = part.strip()
+
+                if specific_location in STATE_ABBREVIATIONS:
+                    state = STATE_ABBREVIATIONS.get(specific_location)
+
+
     else:
             st.error("Not a valid U.S location")
 
