@@ -22,7 +22,7 @@ def get_colleges(state, city=None):
         "api_key": API_KEY,
         "school.state": state,
         "fields": "school.name,school.state,school.city,latest.admissions.admission_rate.overall,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state,latest.admissions.sat_scores.average.overall,latest.admissions.act_scores.midpoint.cumulative",
-        "per_page": 10
+        "per_page": 20
     }
     if city:
             params["school.city"] = city

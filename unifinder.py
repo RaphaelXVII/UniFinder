@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 from college_api import get_colleges
-from college_api import parse_location
+#from college_api import parse_location
 
 #st.header is used for alignment of text
 st.header("UniFinder", text_alignment="center")
@@ -159,12 +159,12 @@ if location and len(location) >=2:
         if selected_location:
             st.success(f"Selected: {selected_location}")
 
-            # Parsing the Location / CONTINUE WORKING ON THIS ASAP
-            # parts splits nominatim text into smaller pieces
+# Parsing the Location / CONTINUE WORKING ON THIS ASAP
+# parts splits nominatim text into smaller pieces
+# city strips the spaces so that any extra spaces in front or at the end of a string is not captured.
+# State is set to none so that once location is selected
             parts = selected_location.split(",")
-            # city strips the spaces so that any extra spaces in front or at the end of a string is not captured.
             city = parts[0].strip()
-            #State is set to none so that once location is selected
             state = None
 
             for part in parts:
@@ -172,6 +172,8 @@ if location and len(location) >=2:
 
                 if specific_location in STATE_ABBREVIATIONS:
                     state = STATE_ABBREVIATIONS.get(specific_location)
+
+
 
 
     else:
@@ -225,6 +227,13 @@ if sumbit:
     st.write("Location: ", selected_location)
     st.write("Tuition willing to pay: ", sliding)
     st.write(state)
+    st.subheader("Universities in your Area 🏢")
+#if state is used to fetch the state of the location that the user selected
+    if state:
+        colleges = get_colleges(state)
+        for college in colleges:
+            st.markdown(f"- 🎓 {college['school.name']}")
+
 
 
 
