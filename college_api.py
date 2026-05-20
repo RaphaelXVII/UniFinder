@@ -2,6 +2,7 @@ import requests
 import os
 from dotenv import load_dotenv
 
+
 load_dotenv() #opens and reads .env file
 
 #storing the API key and address in variables
@@ -21,7 +22,7 @@ def get_colleges(state, city=None):
         "api_key": API_KEY,
         "school.state": state,
         "fields": "school.name,school.state,school.city,latest.admissions.admission_rate.overall,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state,latest.admissions.sat_scores.average.overall,latest.admissions.act_scores.midpoint.cumulative",
-        "per_page": 20
+        "per_page": 10
     }
     if city:
             params["school.city"] = city

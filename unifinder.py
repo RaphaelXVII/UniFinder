@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
-
+from college_api import get_colleges
+from college_api import parse_location
 
 #st.header is used for alignment of text
 st.header("UniFinder", text_alignment="center")
@@ -76,15 +77,71 @@ elif score_type == "ACT":
             placeholder="Enter ACT score (1 to 36)"
         )
 
+#Location Dictinaory
+STATE_ABBREVIATIONS = {
+    "Alabama": "AL",
+    "Alaska": "AK",
+    "Arizona": "AZ",
+    "Arkansas": "AR",
+    "California": "CA",
+    "Colorado": "CO",
+    "Connecticut": "CT",
+    "Delaware": "DE",
+    "Florida": "FL",
+    "Georgia": "GA",
+    "Hawaii": "HI",
+    "Idaho": "ID",
+    "Illinois": "IL",
+    "Indiana": "IN",
+    "Iowa": "IA",
+    "Kansas": "KS",
+    "Kentucky": "KY",
+    "Louisiana": "LA",
+    "Maine": "ME",
+    "Maryland": "MD",
+    "Massachusetts": "MA",
+    "Michigan": "MI",
+    "Minnesota": "MN",
+    "Mississippi": "MS",
+    "Missouri": "MO",
+    "Montana": "MT",
+    "Nebraska": "NE",
+    "Nevada": "NV",
+    "New Hampshire": "NH",
+    "New Jersey": "NJ",
+    "New Mexico": "NM",
+    "New York": "NY",
+    "North Carolina": "NC",
+    "North Dakota": "ND",
+    "Ohio": "OH",
+    "Oklahoma": "OK",
+    "Oregon": "OR",
+    "Pennsylvania": "PA",
+    "Rhode Island": "RI",
+    "South Carolina": "SC",
+    "South Dakota": "SD",
+    "Tennessee": "TN",
+    "Texas": "TX",
+    "Utah": "UT",
+    "Vermont": "VT",
+    "Virginia": "VA",
+    "Washington": "WA",
+    "West Virginia": "WV",
+    "Wisconsin": "WI",
+    "Wyoming": "WY",
+}
+
+
 
 #LOCATION INPUT / User inputs a location and the code
 # on line 10 uses that input from the user to find the most similar location entered
 location = st.text_input(
-    "Enter your Location",
+    "Enter your City",
     placeholder="e.g. Miami"
 )
 
 selected_location =None
+
 
 
 #If else statements for location search.
@@ -101,8 +158,15 @@ if location and len(location) >=2:
         )
         if selected_location:
             st.success(f"Selected: {selected_location}")
+            # Parsing the Location / CONTINUE WORKING ON THIS ASAP
+            parts = selected_location.split(",")
+            city = parts[0].strip()
+            state = parts[1].strip()
+
+            state = STATE_ABBREVIATIONS.get(state)
     else:
             st.error("Not a valid U.S location")
+
 
 
 #This is slider for Tuition
@@ -149,6 +213,8 @@ if sumbit:
     elif score_type=="ACT":
         st.write("ACT Score: ", act_score)
     st.write("Location: ", selected_location)
+    st.write("Tuition willing to pay: ", sliding)
+    st.write(state)
 
 
 
