@@ -53,7 +53,7 @@ score_type = st.radio(
     ["SAT", "ACT"],
     index=None
 )
-#Setting the inital scores as 0 so then the user can input their own score
+#Setting the initial scores as 0 so then the user can input their own score
 sat_score = None
 act_score = None
 
@@ -77,7 +77,7 @@ elif score_type == "ACT":
             placeholder="Enter ACT score (1 to 36)"
         )
 
-#Location Dictinaory used to abbreviate States so that college_api can use as input
+#Location Dictioanry used to abbreviate States so that college_api can use as input
 STATE_ABBREVIATIONS = {
     "Alabama": "AL",
     "Alaska": "AK",
