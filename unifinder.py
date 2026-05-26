@@ -227,10 +227,11 @@ if sumbit:
     st.subheader("Universities in your Area 🏢")
 
 #"if state" is used to fetch all Universites based on that State that the user selected
+#colleges is where we are pulling college_api data from 
     if state:
         colleges = get_colleges(state)
         for college in colleges:
-            st.markdown(f"- 🎓 {college['school.name']}")
+            st.markdown(f"- 🎓 {college['school.name']} - {college["latest.admissions.admission_rate.overall"]}")
 
 
 

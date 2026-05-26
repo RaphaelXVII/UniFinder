@@ -16,6 +16,8 @@ def parse_location(location):
     state = parts[1].strip()
     return city, state
 
+
+
 #defining main function. takes state as required, city optional.
 def get_colleges(state, city=None):
     params = {
@@ -24,6 +26,8 @@ def get_colleges(state, city=None):
         "fields": "school.name,school.state,school.city,latest.admissions.admission_rate.overall,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state,latest.admissions.sat_scores.average.overall,latest.admissions.act_scores.midpoint.cumulative",
         "per_page": 20
     }
+
+    
     if city:
             params["school.city"] = city
 
