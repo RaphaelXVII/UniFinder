@@ -231,14 +231,9 @@ if sumbit:
     if state:
         colleges = get_colleges(state)
         for college in colleges:
-            st.markdown(f"- 🎓 {college['school.name']} - {college["latest.admissions.admission_rate.overall"]}")
-
-
-
-
-
-
-
-
-
-
+            rate = college.get("latest.admissions.admission_rate.overall")
+            if rate is None:
+                rate_text = "N/A"
+            else:
+                rate_text = f"{rate * 100:.0f}%"
+            st.markdown(f"- 🎓 {college['school.name']} - {rate_text}")
