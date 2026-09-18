@@ -236,4 +236,4 @@ if sumbit:
                 rate_text = "N/A"
             else:
                 rate_text = f"{rate * 100:.0f}%"
-            st.markdown(f"- 🎓 {college['school.name']} - {rate_text}")
+            st.markdown(f"- 🎓 {college['school.name']} - 📈Acceptance Rate: {rate_text}")
