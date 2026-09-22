@@ -209,6 +209,8 @@ with st.form("Student Information Input"):
 #line 123 has the "disabled= not filled" which is another boolean is that automatically false and turns on when all inputs are filled in
     with st.container(horizontal_alignment="center"):
         sumbit = st.form_submit_button("Submit", disabled= not filled)
+#COMPARE button will be used to compare student stats to university stats
+        compare = st.form_submit_button("Compare")
 
 
 
