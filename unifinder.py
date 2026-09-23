@@ -209,8 +209,10 @@ with st.form("Student Information Input"):
 #line 123 has the "disabled= not filled" which is another boolean is that automatically false and turns on when all inputs are filled in
     with st.container(horizontal_alignment="center"):
         sumbit = st.form_submit_button("Submit", disabled= not filled)
-#COMPARE button will be used to compare student stats to university stats
-        compare = st.form_submit_button("Compare")
+
+
+
+
 
 
 
@@ -227,6 +229,9 @@ if sumbit:
     st.write("Tuition willing to pay: ", sliding)
     st.write(state)
     st.subheader("Universities in your Area 🏢")
+    # COMPARE Tab will be used to compare student stats to university stats
+    Compare = st.button("Compare")
+
 
 #"if state" is used to fetch all Universites based on that State that the user selected
 #colleges is where we are pulling college_api data from 
