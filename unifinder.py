@@ -4,7 +4,10 @@ from college_api import get_colleges
 #from college_api import parse_location
 
 #st.header is used for alignment of text
-st.header("UniFinder", text_alignment="center")
+st.header("UniFinder 🎓", text_alignment="center")
+#Progress Bar
+#bar = st.progress(0)
+
 
 # This is where we implemented Nominatim API to find a more precise location of where the student is located
 #the url is where we are getting the specific locations that match the input that the User inputs
