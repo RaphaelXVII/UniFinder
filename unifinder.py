@@ -3,14 +3,26 @@ import requests
 from college_api import get_colleges
 #from college_api import parse_location
 
+#Defining Pages across service
+Home = st.Page("unifinder.py", title="Home, Page")
+ComparePage = st.Page("compare.py", title="Compare your Stats")
+pg = st.navigation([Home, ComparePage])
+pg.run()
+
+
+
+
 #st.header is used for alignment of text
 st.header("UniFinder 🎓", text_alignment="center")
 #Progress Bar
 #bar = st.progress(0)
 with st.sidebar:
     # COMPARE Tab will be used to compare student stats to university stats
-    Compare = st.button("Compare")
+    Compare = st.button("Compare your Stats", width=300)
     st.empty()
+    if Compare is True:
+
+
 
 
 # This is where we implemented Nominatim API to find a more precise location of where the student is located
