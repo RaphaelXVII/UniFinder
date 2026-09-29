@@ -7,6 +7,10 @@ from college_api import get_colleges
 st.header("UniFinder 🎓", text_alignment="center")
 #Progress Bar
 #bar = st.progress(0)
+with st.sidebar:
+    # COMPARE Tab will be used to compare student stats to university stats
+    Compare = st.button("Compare")
+    st.empty()
 
 
 # This is where we implemented Nominatim API to find a more precise location of where the student is located
@@ -232,8 +236,7 @@ if sumbit:
     st.write("Tuition willing to pay: ", sliding)
     st.write(state)
     st.subheader("Universities in your Area 🏢")
-    # COMPARE Tab will be used to compare student stats to university stats
-    Compare = st.button("Compare")
+
 
 
 #"if state" is used to fetch all Universites based on that State that the user selected
