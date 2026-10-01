@@ -226,6 +226,8 @@ with st.form("Student Information Input"):
 
  # "if submit" & "st.write" actually submit the inputs and returns what the user entered
 if sumbit:
+    st.session_state["name"] = name
+
     st.write("Name: ", name)
     st.write("GPA", gpa)
     if score_type=="SAT":
