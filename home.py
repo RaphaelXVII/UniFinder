@@ -1,89 +1,11 @@
-import streamlit as st
+import pandas as pd
 import requests
-from college_api import get_colleges
-#from college_api import parse_location
+import streamlit as st
 
-#st.header is used for alignment of text
-st.header("UniFinder 🎓", text_alignment="center")
-#Progress Bar
-#bar = st.progress(0)
-with st.sidebar:
-    st.empty()
+from college_api import SCHOOL_FIELDS, get_colleges, get_location_suggestions
+from college_matches import FLORIDA_PROFILE_SOURCE, best_matches
 
 
-
-# This is where we implemented Nominatim API to find a more precise location of where the student is located
-#the url is where we are getting the specific locations that match the input that the User inputs
-def search_location(query):
-    url = "https://nominatim.openstreetmap.org/search"
-
-    params = {
-        "q": query,
-        "format": "json",
-        "countrycodes": "us",
-        "limit": 5,
-    }
-
-    headers = {"User-Agent": "UniFinder"}
-    try:
-        response = requests.get(url, params=params, headers=headers, timeout=5)
-        response.raise_for_status()
-        return response.json()
-    except Exception:
-        return []
-
-#User inputs their name
-name = st.text_input(
-    "Enter your Name",
-    value="",
-    placeholder="e.g. John Doe",
-
-)
-# User inputs their GPA / min 1.0 GPA - max 5.0 GPA
-gpa = st.number_input(
-    "High school GPA",
-    min_value=1.0,
-    max_value=5.0,
-    value=None,
-    step=0.1,
-    placeholder="Enter GPA (0.0 - 4.0)"
-)
-
-
-
-# SAT/ACT INPUT This lets the user pick between an SAT or ACT Score to input
-# the reason why its outside of st.form is because st.form function saves multiple inputs before submitting it to the backend
-# and we want the score input box to pop up after they make a choice so that user can input score.
-score_type = st.radio(
-    "Select the Test score type",
-    ["SAT", "ACT"],
-    index=None
-)
-#Setting the initial scores as 0 so then the user can input their own score
-sat_score = None
-act_score = None
-
-#If else statements for ACT and SAT scores. It will not accept scores outside the range which is min & max values
-if score_type == "SAT":
-        sat_score = st.number_input(
-            "SAT score",
-            min_value=400,
-            max_value=1600,
-            value=None,
-            step=100,
-            placeholder="Enter SAT score (400 to 1600)"
-        )
-elif score_type == "ACT":
-        act_score =st.number_input(
-            "ACT score",
-            min_value=1,
-            max_value=36,
-            value=None,
-            step=1,
-            placeholder="Enter ACT score (1 to 36)"
-        )
-
-#Location Dictioanry used to abbreviate States so that college_api can use as input
 STATE_ABBREVIATIONS = {
     "Alabama": "AL",
     "Alaska": "AK",
@@ -138,117 +60,198 @@ STATE_ABBREVIATIONS = {
 }
 
 
-
-#LOCATION INPUT / User inputs a location and the code
-# on line 10 uses that input from the user to find the most similar location entered
-location = st.text_input(
-    "Enter your City",
-    placeholder="e.g. Miami"
-)
-
-selected_location =None
+@st.cache_data(ttl=900, max_entries=128, show_spinner=False)
+def search_colleges(state):
+    return get_colleges(state)
 
 
+@st.cache_data(ttl=86_400, max_entries=128, show_spinner=False)
+def search_locations(city):
+    return {
+        place["display_name"]: place.get("address", {}).get("state")
+        for place in get_location_suggestions(city)
+        if place.get("display_name")
+        and place.get("address", {}).get("state") in STATE_ABBREVIATIONS
+    }
 
-#If else statements for location search.
-# This is the function that actually finds the most similar location inputted
-if location and len(location) >=2:
-    results = search_location(location)
-    if results:
-        options = [place["display_name"] for place in results]
-        selected_location = st.selectbox(
-            "Select Location",
-            options,
-            index=None,
-            placeholder="Select a Location"
-        )
-        if selected_location:
-            st.success(f"Selected: {selected_location}")
 
-# Parsing the Nominatim Location results  into smaller strings
-# parts variable  splits nominatim text into smaller pieces
-# city variable strips the spaces so that any extra spaces in front or at the end of a string is not captured.
-# State variable is set to none so that once location is selected it's no longer None
-            parts = selected_location.split(",")
-            city = parts[0].strip()
-            state = None
+def show_results(search):
+    st.header(f"College results for {search['location']}")
+    if not search["schools"]:
+        st.info("College Scorecard returned no schools for this state. Try selecting a city in another state.")
+        return
 
-#Using a for loop to look through each specific piece of string that matches a state and assigns an abbreviation for college_api to read
-            for part in parts:
-                specific_location = part.strip()
+    schools = pd.DataFrame(search["schools"], columns=list(SCHOOL_FIELDS)).rename(columns=SCHOOL_FIELDS)
+    numeric_columns = ["Admission rate", "In-state tuition", "Out-of-state tuition",
+                       "Average SAT", "ACT midpoint", "Latitude", "Longitude"]
+    schools[numeric_columns] = schools[numeric_columns].apply(pd.to_numeric, errors="coerce")
+    schools = schools.sort_values(["School", "City"])
+    tuition = search["tuition"]
+    budget = search["budget"]
+    st.caption(f"Annual budget ${budget:,} · {tuition} · Source: U.S. Department of Education College Scorecard")
+    if st.checkbox("Show only schools within my tuition budget", key="within_budget"):
+        schools = schools.loc[schools[tuition].le(budget)]
+        st.caption("Schools with unreported tuition are excluded while this filter is on.")
+    if schools.empty:
+        st.info("No schools have reported tuition within this budget. Clear the filter to see every result.")
+        return
 
-                if specific_location in STATE_ABBREVIATIONS:
-                    state = STATE_ABBREVIATIONS.get(specific_location)
+    st.success(f"Showing {len(schools):,} of {len(search['schools']):,} schools returned for this location.")
+    gpa = search.get("gpa")
+    score_type = search["score_type"]
+    score = search["score"]
+    st.subheader("Best matches")
+    if gpa is None and score is None:
+        st.info("Enter your weighted GPA or an ACT or SAT score, then select Find colleges to see matches.")
     else:
-            st.error("Not a valid U.S location")
-
-
-
-#This is slider for Tuition / going to be used to determine how model ranks universities based on user
-sliding = st.slider(
-    "Tuition you are willing to pay (Per Year)",
-    min_value = 0,
-    max_value = 300000,
-    value=None,
-    step=1000,
-    format = "dollar",
-    key=None,
-)
-
-
-
-#If all Inputs are not filled in, the submit button will not work line 110 and 123 are conneceted
-sliding_filled = sliding > 1000
-score_filled = (score_type == "ACT" and act_score is not None) or (score_type == "SAT" and sat_score is not None)
-filled = (gpa is not None) and (score_type is not None) and (selected_location is not None) and score_filled and sliding_filled
-
-
-#st.form is used to create a form of inputs and holds onto all the values so that
-# individual inputs are not be re-ran over and over again and instead holds all values.
-with st.form("Student Information Input"):
-
-
-
-
-
-#SUBMIT BUTTON IS HERE / st.container is used to align anything that you need
-#line 110 is a boolean that checks if every input is filled
-#line 123 has the "disabled= not filled" which is another boolean is that automatically false and turns on when all inputs are filled in
-    with st.container(horizontal_alignment="center"):
-        sumbit = st.form_submit_button("Submit", disabled= not filled)
-
-
-
-
-
-
-
-
- # "if submit" & "st.write" actually submit the inputs and returns what the user entered
-if sumbit:
-    st.session_state["name"] = name
-
-    st.write("Name: ", name)
-    st.write("GPA", gpa)
-    if score_type=="SAT":
-        st.write("SAT Score: ", sat_score)
-    elif score_type=="ACT":
-        st.write("ACT Score: ", act_score)
-    st.write("Location: ", selected_location)
-    st.write("Tuition willing to pay: ", sliding)
-    st.write(state)
-    st.subheader("Universities in your Area 🏢")
-
-
-
-#"if state" is used to fetch all Universites based on that State that the user selected
-#colleges is where we are pulling college_api data from
-    if state:
-        colleges = get_colleges(state)
-        for college in colleges:
-            rate = college.get("latest.admissions.admission_rate.overall")
-            if rate is None:
-                rate_text = "N/A"
+        matches, uses_gpa = best_matches(schools, gpa, score_type, score, tuition)
+        if matches.empty:
+            if score is None:
+                st.info("GPA benchmarks are unavailable for these schools. Add an ACT or SAT score to find more matches.")
             else:
-                rate_text = f"{rate * 100:.0f}%"
-            st.markdown(f"- 🎓 {college['school.name']} - 📈Acceptance Rate: {rate_text}")
+                st.info(f"The schools shown have no published {score_type} benchmark.")
+        else:
+            profile = []
+            if uses_gpa:
+                profile.append(f"Weighted GPA {gpa:.2f}")
+            if score is not None:
+                profile.append(f"{score_type} {score:,}")
+            st.caption(" · ".join(profile))
+            if uses_gpa:
+                st.caption(
+                    "Ranked by closeness to published fall profile midpoints for participating "
+                    f"Florida public universities. [2025–2026 fall profiles]({FLORIDA_PROFILE_SOURCE})"
+                )
+            else:
+                if gpa is not None:
+                    st.info("GPA benchmarks are unavailable for these schools.")
+                st.caption(f"Ranked by closeness to reported {score_type} scores in College Scorecard.")
+            st.dataframe(
+                matches,
+                hide_index=True,
+                column_config={tuition: st.column_config.NumberColumn(format="dollar")},
+            )
+            st.caption("Use these comparisons to build a shortlist. Admission decisions depend on each school's criteria.")
+
+    st.subheader("All college results")
+    st.caption("Blank cells mean the data was unreported. Admission rates describe past applicants.")
+    st.dataframe(
+        schools.drop(columns=["Institution ID", "Latitude", "Longitude"]),
+        hide_index=True,
+        column_config={
+            "Admission rate": st.column_config.NumberColumn(format="percent"),
+            "In-state tuition": st.column_config.NumberColumn(format="dollar"),
+            "Out-of-state tuition": st.column_config.NumberColumn(format="dollar"),
+            "Average SAT": st.column_config.NumberColumn(format="%d"),
+            "ACT midpoint": st.column_config.NumberColumn(format="%d"),
+        },
+    )
+
+    st.subheader("Annual tuition comparison")
+    lowest = schools.nsmallest(10, tuition).dropna(subset=[tuition])
+    if lowest.empty:
+        st.info("No tuition data is available for the schools shown.")
+    else:
+        st.caption(f"Up to 10 schools with the lowest reported {tuition.lower()}. See the table for exact amounts.")
+        st.bar_chart(lowest, x="School", y=tuition, horizontal=True, sort=False,
+                     y_label="Annual tuition (USD)")
+
+    st.subheader("Campus map")
+    campuses = schools.loc[
+        schools["Latitude"].between(-90, 90)
+        & schools["Longitude"].between(-180, 180)
+        & (schools["Latitude"].ne(0) | schools["Longitude"].ne(0))
+    ]
+    if campuses.empty:
+        st.info("The schools shown have no campus coordinates. Their cities and states are listed in the table.")
+    else:
+        st.caption(f"The map shows {len(campuses):,} schools with campus coordinates. "
+                   "See the table for school names, cities, and states.")
+        st.map(campuses[["Latitude", "Longitude"]], latitude="Latitude",
+               longitude="Longitude", height=400)
+
+
+st.title("UniFinder")
+st.write("Explore U.S. colleges and compare annual tuition, admission rates, and campus locations.")
+
+with st.expander("Student profile for matches (optional)", expanded=True):
+    name = st.text_input("Enter your Name")
+    gpa = st.number_input(
+        "Weighted high school GPA", min_value=0.0, max_value=5.0, value=None, step=0.01,
+        help="Use a GPA calculated on a 4.0 base with extra weight for advanced courses. "
+             "Used where a school publishes a comparable benchmark.",
+    )
+    score_type = st.radio("Select the test score type", ["SAT", "ACT"], index=None, horizontal=True)
+    score = None
+    if score_type == "SAT":
+        score = st.number_input("SAT score", min_value=400, max_value=1600, value=None, step=10)
+    elif score_type == "ACT":
+        score = st.number_input("ACT score", min_value=1, max_value=36, value=None)
+
+
+with st.container(border=True, key="college_location"):
+    with st.form("location_search", border=False):
+        city = st.text_input("Enter your City", placeholder="e.g. Miami")
+        lookup = st.form_submit_button("Search locations")
+
+    if lookup:
+        st.session_state.pop("selected_location", None)
+        st.session_state.pop("location_suggestions", None)
+        if len(city.strip()) < 2:
+            st.warning("Enter a city name to search for locations.")
+        else:
+            try:
+                with st.spinner("Looking up locations…"):
+                    st.session_state["location_suggestions"] = search_locations(city.strip().casefold())
+            except (requests.RequestException, ValueError):
+                st.error("The location search is temporarily unavailable. Please try again.")
+
+    suggestions = st.session_state.get("location_suggestions")
+    state = None
+    if suggestions:
+        selected_location = st.selectbox("Select Location", suggestions, index=None,
+                                         placeholder="Select a Location", key="selected_location")
+        if selected_location:
+            state = suggestions[selected_location]
+            st.success(f"Selected: {selected_location}")
+            st.caption(f"College results will cover all of {state}.")
+    elif suggestions == {}:
+        st.info("No matching U.S. locations. Check the city spelling or include its state.")
+
+    st.caption("Location data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright)")
+
+with st.form("college_search"):
+    rate_column, budget_column = st.columns(2)
+    with rate_column:
+        tuition = st.radio("Tuition rate", ["In-state tuition", "Out-of-state tuition"])
+    with budget_column:
+        budget = st.slider("Annual tuition budget", 0, 300_000, 25_000, step=1000, format="dollar")
+
+    submitted = st.form_submit_button("Find colleges", type="primary")
+
+if submitted:
+    st.session_state.pop("college_search_results", None)
+    if state is None:
+        st.warning("Search for a city and select a location before looking up colleges.")
+    else:
+        try:
+            with st.spinner("Looking up colleges on College Scorecard…"):
+                results = search_colleges(STATE_ABBREVIATIONS[state])
+        except requests.RequestException:
+            st.error("College Scorecard could not be reached or returned an error. Please try again.")
+        except (RuntimeError, ValueError) as error:
+            st.error(str(error))
+        else:
+            st.session_state["name"] = name
+            st.session_state["college_search_results"] = {
+                "location": state,
+                "budget": budget,
+                "tuition": tuition,
+                "score_type": score_type,
+                "score": score,
+                "gpa": gpa,
+                "schools": results,
+            }
+
+if "college_search_results" in st.session_state:
+    show_results(st.session_state["college_search_results"])
